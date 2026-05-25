@@ -4,7 +4,11 @@
   "private": true,
   "description": "FenceFlow CRM MVP prototype and architecture blueprint for fence construction companies.",
   "scripts": {
+    "build": "node scripts/build-static.js",
     "start": "node server.js"
+  },
+  "engines": {
+    "node": "22.x"
   },
   "keywords": [
     "crm",
