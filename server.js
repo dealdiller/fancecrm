@@ -22,7 +22,7 @@ function resolvePath(url) {
   return cleanUrl.replace(/^\/+/, "");
 }
 
-const server = http.createServer((req, res) => {
+function handleRequest(req, res) {
   const filePath = path.join(root, resolvePath(req.url || "/"));
   if (!filePath.startsWith(root)) {
     res.writeHead(403);
@@ -40,8 +40,13 @@ const server = http.createServer((req, res) => {
     res.writeHead(200, { "content-type": types[ext] || "application/octet-stream" });
     res.end(content);
   });
-});
+}
 
-server.listen(port, () => {
-  console.log(`FenceFlow CRM preview: http://localhost:${port}`);
-});
+if (require.main === module && !process.env.VERCEL) {
+  const server = http.createServer(handleRequest);
+  server.listen(port, () => {
+    console.log(`FenceFlow CRM preview: http://localhost:${port}`);
+  });
+}
+
+module.exports = handleRequest;
