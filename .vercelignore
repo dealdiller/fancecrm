@@ -1,0 +1,7 @@
+backend
+docs
+frontend
+prisma
+Dockerfile
+docker-compose.yml
+server.js
