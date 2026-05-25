@@ -2,7 +2,10 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 
-const root = __dirname;
+const sourceRoot = __dirname;
+const staticRoot = fs.existsSync(path.join(sourceRoot, "dist", "index.html"))
+  ? path.join(sourceRoot, "dist")
+  : sourceRoot;
 const port = process.env.PORT || 4173;
 
 const types = {
@@ -17,14 +20,17 @@ const types = {
 function resolvePath(url) {
   const cleanUrl = decodeURIComponent(url.split("?")[0]);
   if (cleanUrl === "/" || cleanUrl === "/crm") return "index.html";
+  if (cleanUrl === "/app.js" || cleanUrl === "/client.js" || cleanUrl === "/assets/client.js") {
+    return fs.existsSync(path.join(staticRoot, "assets/client.js")) ? "assets/client.js" : "client.js";
+  }
   if (cleanUrl === "/zabory-iz-profnastila") return "public/zabory-iz-profnastila.html";
   if (cleanUrl === "/kalkulyator-zabora") return "public/kalkulyator-zabora.html";
   return cleanUrl.replace(/^\/+/, "");
 }
 
 function handleRequest(req, res) {
-  const filePath = path.join(root, resolvePath(req.url || "/"));
-  if (!filePath.startsWith(root)) {
+  const filePath = path.resolve(staticRoot, resolvePath(req.url || "/"));
+  if (filePath !== staticRoot && !filePath.startsWith(`${staticRoot}${path.sep}`)) {
     res.writeHead(403);
     res.end("Forbidden");
     return;
