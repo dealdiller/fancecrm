@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FenceFlow CRM - система продаж, замеров и монтажей заборов</title>
+    <meta name="description" content="FenceFlow CRM: CRM для заявок, сделок, замеров, монтажей, звонков, калькулятора стоимости и SEO-заявок в бизнесе по строительству заборов." />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://fenceflow-crm.vercel.app/" />
+    <meta property="og:title" content="FenceFlow CRM для строительных компаний" />
+    <meta property="og:description" content="CRM для заявок, сделок, замеров, монтажей, звонков и SEO-страниц бизнеса по заборам." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-frame">
+      <aside class="sidebar" id="sidebar">
+        <a class="brand" href="#dashboard"><span class="brand-mark">F</span><span><strong>FenceFlow</strong><small>CRM для заборов</small></span></a>
+        <nav class="side-nav">
+          <a class="nav-link active" href="#dashboard" data-view-link="dashboard">Главная</a>
+          <a class="nav-link" href="#pipeline" data-view-link="pipeline">Сделки</a>
+          <a class="nav-link" href="#contacts" data-view-link="contacts">Контакты</a>
+          <a class="nav-link" href="#schedule" data-view-link="schedule">Замеры и монтажи</a>
+          <a class="nav-link" href="#automation" data-view-link="automation">Автоматизация</a>
+          <a class="nav-link" href="#seo" data-view-link="seo">SEO</a>
+        </nav>
+        <div class="sidebar-footer"><p>Компания</p><strong>ЗаборСтрой Север</strong><span>owner@fenceflow.local</span></div>
+      </aside>
+
+      <main class="workspace">
+        <header class="topbar">
+          <button class="icon-button mobile-only" id="openSidebar" type="button" aria-label="Открыть меню"><span></span><span></span><span></span></button>
+          <label class="global-search"><span>Поиск</span><input type="search" placeholder="Клиент, телефон, сделка, адрес" /></label>
+          <div class="top-actions"><button class="ghost-button" id="themeToggle" type="button">Тема</button><button class="ghost-button" type="button" data-open-login>Вход</button><button class="primary-button" type="button" data-open-deal>Новая сделка</button></div>
+        </header>
+
+        <section class="view active" id="dashboard">
+          <div class="page-heading"><div><p class="eyebrow">Рабочая область</p><h1>Dashboard для быстрых продаж заборов</h1><p class="lead">Новые заявки, звонки, просрочки, замеры и монтажи собраны в одном интерфейсе.</p></div><button class="primary-button" type="button" data-open-deal>Создать заявку</button></div>
+          <div class="metric-grid">
+            <article class="metric-card urgent"><span>Новые заявки</span><strong>18</strong><small>+6 за сегодня</small></article>
+            <article class="metric-card"><span>Сделки в работе</span><strong>143</strong><small>32 ожидают действия</small></article>
+            <article class="metric-card warning"><span>Замеры сегодня</span><strong>9</strong><small>2 без подтверждения</small></article>
+            <article class="metric-card success"><span>Сумма продаж</span><strong>8,4 млн</strong><small>конверсия 27%</small></article>
+          </div>
+          <div class="dashboard-grid">
+            <section class="panel"><div class="panel-header"><div><h2>Продажи по неделям</h2><p>План, факт и темп закрытия</p></div></div><div class="bar-chart"><span style="--h:42%"></span><span style="--h:68%"></span><span style="--h:53%"></span><span style="--h:81%"></span><span style="--h:74%"></span><span style="--h:92%"></span><span style="--h:64%"></span></div></section>
+            <section class="panel"><div class="panel-header"><div><h2>Срочные задачи</h2><p>Сначала просрочки и пропущенные звонки</p></div></div><div class="task-list"><button class="task-row overdue" type="button"><strong>Перезвонить: +7 916 440-20-10</strong><span>Пропущенный звонок, 18 минут назад</span></button><button class="task-row" type="button"><strong>Подготовить смету</strong><span>Евроштакетник, 86 м</span></button></div></section>
+          </div>
+        </section>
+
+        <section class="view" id="pipeline">
+          <div class="page-heading compact"><div><p class="eyebrow">Сделки</p><h1>Kanban-воронка строительства заборов</h1></div><button class="primary-button" type="button" data-open-deal>Новая сделка</button></div>
+          <div class="filter-panel"><label>Тип забора<select><option>Все типы</option><option>Профнастил</option><option>Евроштакетник</option></select></label><label>Менеджер<select><option>Все менеджеры</option></select></label><label>Дата замера<input type="date" /></label><label>Бюджет<input type="number" placeholder="от 150000" /></label></div>
+          <div class="kanban-board">
+            <section class="kanban-column"><header><h2>Новая заявка</h2><span>18</span></header><article class="deal-card high" draggable="true" data-open-deal><strong>Забор из профнастила, 72 м</strong><span>Анна Петрова, Истра</span><small>Источник: /zabory-iz-profnastila</small><b>240 000 ₽</b></article></section>
+            <section class="kanban-column"><header><h2>Назначен замер</h2><span>9</span></header><article class="deal-card warning" draggable="true" data-open-deal><strong>3D-сетка Gitter, 140 м</strong><span>Складской участок</span><small>Замерщик: Крылов, сегодня</small><b>315 000 ₽</b></article></section>
+            <section class="kanban-column"><header><h2>Расчет стоимости</h2><span>7</span></header><article class="deal-card" draggable="true" data-open-deal><strong>Комбинированный забор</strong><span>Одинцово</span><small>Нужна смета с фундаментом</small><b>620 000 ₽</b></article></section>
+            <section class="kanban-column"><header><h2>Монтаж запланирован</h2><span>8</span></header><article class="deal-card success" draggable="true" data-open-deal><strong>Кирпичные столбы + профнастил</strong><span>Монтаж 29 мая</span><small>Бригада N3</small><b>740 000 ₽</b></article></section>
+          </div>
+        </section>
+
+        <section class="view" id="contacts"><div class="page-heading compact"><div><p class="eyebrow">Контакты</p><h1>Клиенты, объекты и история коммуникаций</h1></div></div><div class="table-panel"><table><thead><tr><th>Клиент</th><th>Телефон</th><th>Тип</th><th>Объект</th></tr></thead><tbody><tr><td>Анна Петрова</td><td>+7 916 440-20-10</td><td>Частное лицо</td><td>Истра</td></tr><tr><td>СНТ Березки</td><td>+7 495 222-10-88</td><td>СНТ</td><td>Пушкинский район</td></tr></tbody></table></div></section>
+        <section class="view" id="schedule"><div class="page-heading compact"><div><p class="eyebrow">Операции</p><h1>Календарь замеров и монтажей</h1></div></div><div class="schedule-grid"><article class="schedule-card"><span class="date-badge">26 мая</span><h2>Замер профнастила, 72 м</h2><p>Истра, КП Речной. Проверить уклон и грунт.</p></article><article class="schedule-card accent"><span class="date-badge">27 мая</span><h2>Монтаж 3D-сетки</h2><p>Материалы доставлены, объект готов.</p></article></div></section>
+        <section class="view" id="automation"><div class="page-heading compact"><div><p class="eyebrow">Автоматизация</p><h1>Событие, условие, действие</h1></div></div><div class="automation-grid"><article class="rule-card"><span>Событие</span><h2>Создана сделка</h2><p>Назначить менеджера и создать задачу связаться сегодня.</p></article><article class="rule-card"><span>Событие</span><h2>Пропущенный звонок</h2><p>Создать задачу перезвонить и уведомить ответственного.</p></article></div></section>
+        <section class="view" id="seo"><div class="page-heading"><div><p class="eyebrow">Публичная часть</p><h1>SEO-страницы создают сделки в CRM</h1><p class="lead">SSG/SSR страницы услуг, городов, блога и калькулятора передают UTM, URL и тип забора.</p></div><a class="primary-button as-link" href="/zabory-iz-profnastila">Открыть страницу услуги</a></div></section>
+      </main>
+    </div>
+
+    <dialog class="auth-dialog" id="loginDialog"><form class="auth-card" method="dialog" id="loginForm"><button class="dialog-close" value="cancel" type="submit">×</button><p class="eyebrow">FenceFlow CRM</p><h2>Вход в рабочую область</h2><label>Email или телефон<input name="login" autocomplete="username" placeholder="manager@company.ru или +7..." /><span class="field-error" data-error-for="login"></span></label><label>Пароль<input name="password" type="password" autocomplete="current-password" placeholder="Минимум 8 символов" /><span class="field-error" data-error-for="password"></span></label><label class="checkbox-row"><input type="checkbox" checked />Запомнить пользователя</label><button class="primary-button full" type="submit" id="loginSubmit">Войти</button><div class="auth-links"><a href="#reset">Восстановить пароль</a><a href="#register">Регистрация компании</a></div></form></dialog>
+
+    <aside class="deal-drawer" id="dealDrawer" aria-hidden="true"><div class="drawer-header"><div><p class="eyebrow">Карточка сделки</p><h2>Забор из профнастила, 72 м</h2></div><button class="icon-close" id="closeDeal" type="button">×</button></div><div class="drawer-actions"><button class="primary-button" type="button">Позвонить</button><button class="secondary-button" type="button">Задача</button><button class="secondary-button" type="button">Замер</button><button class="secondary-button" type="button">Смета</button></div><div class="drawer-content"><section><h3>Клиент</h3><dl><dt>Имя</dt><dd>Анна Петрова</dd><dt>Телефон</dt><dd>+7 916 440-20-10</dd><dt>Источник</dt><dd>SEO: /zabory-iz-profnastila</dd></dl></section><section class="calculator"><h3>Калькулятор стоимости</h3><label>Длина, м<input id="calcLength" type="number" value="72" /></label><label>Высота, м<input id="calcHeight" type="number" value="2" step="0.1" /></label><label>Тип забора<select id="calcType"><option value="2600">Профнастил</option><option value="3400">Евроштакетник</option><option value="1850">3D-сетка</option></select></label><label>Ворота<input id="calcGates" type="number" value="1" /></label><label>Калитки<input id="calcWickets" type="number" value="1" /></label><label>Скидка, %<input id="calcDiscount" type="number" value="5" /></label><div class="calc-total"><span>Итоговая стоимость</span><strong id="calcTotal">0 ₽</strong></div><button class="primary-button full" type="button">Сохранить расчет</button></section></div></aside>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="/app.js" defer></script>
+  </body>
+</html>
