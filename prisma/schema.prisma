@@ -1,0 +1,584 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserStatus { INVITED ACTIVE SUSPENDED DELETED }
+enum DealStatus { OPEN WON LOST ARCHIVED }
+enum Priority { LOW NORMAL HIGH URGENT }
+enum FenceType { PROFILED_SHEET EURO_PICKET CHAIN_LINK GITTER_3D WOOD METAL FORGED CONCRETE BRICK COMBINED TEMPORARY DECORATIVE }
+enum ClientType { PERSON COMPANY DEVELOPER GARDEN_ASSOCIATION MANAGEMENT_COMPANY }
+enum TaskStatus { TODO IN_PROGRESS DONE CANCELED }
+enum MeasurementStatus { PLANNED CONFIRMED DONE CANCELED MISSED }
+enum InstallationStatus { PLANNED CONFIRMED IN_PROGRESS PAUSED DONE ACT_SIGNED CANCELED }
+enum CallDirection { INBOUND OUTBOUND }
+enum CallStatus { ANSWERED MISSED BUSY FAILED }
+enum PaymentStatus { PENDING PARTIAL PAID REFUNDED CANCELED }
+enum IntegrationType { GUDOK WEBSITE_FORM QUIZ TELEGRAM WHATSAPP EMAIL YANDEX_DIRECT VK_ADS WEBHOOK MAKE ALBATO ZAPIER }
+
+model Company {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  plan      String   @default("mvp")
+  settings  Json     @default("{}")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  users     User[]
+  roles     Role[]
+  pipelines Pipeline[]
+  contacts  Contact[]
+  deals     Deal[]
+  tasks     Task[]
+  measurements Measurement[]
+  installations Installation[]
+  estimates Estimate[]
+  callLogs  CallLog[]
+  integrations Integration[]
+  webhooks  Webhook[]
+  automationRules AutomationRule[]
+  activityLogs ActivityLog[]
+  files     FileAsset[]
+  notifications Notification[]
+  payments  PaymentRecord[]
+  seoPages  SeoPage[]
+  blogPosts BlogPost[]
+  leadForms LeadForm[]
+  utmSources UtmSource[]
+}
+
+model User {
+  id           String     @id @default(cuid())
+  companyId    String
+  roleId       String?
+  name         String
+  email        String?
+  phone        String?
+  passwordHash String
+  status       UserStatus @default(ACTIVE)
+  lastLoginAt  DateTime?
+  failedLoginCount Int    @default(0)
+  lockedUntil  DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  deletedAt    DateTime?
+  company      Company    @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  role         Role?      @relation(fields: [roleId], references: [id], onDelete: SetNull)
+  managedDeals Deal[]     @relation("DealManager")
+  measuredDeals Deal[]    @relation("DealMeasurer")
+  assignedTasks Task[]
+  measurements Measurement[]
+  installations Installation[]
+  activityLogs ActivityLog[]
+  notifications Notification[]
+  blogPosts    BlogPost[]
+  @@unique([companyId, email])
+  @@unique([companyId, phone])
+  @@index([companyId, roleId])
+}
+
+model Role {
+  id          String       @id @default(cuid())
+  companyId   String
+  name        String
+  systemName  String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  company     Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  users       User[]
+  permissions Permission[]
+  @@unique([companyId, systemName])
+}
+
+model Permission {
+  id        String   @id @default(cuid())
+  roleId    String
+  resource  String
+  action    String
+  scope     String   @default("company")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  @@unique([roleId, resource, action, scope])
+}
+
+model Pipeline {
+  id        String          @id @default(cuid())
+  companyId String
+  name      String
+  isDefault Boolean         @default(false)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  company   Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  stages    PipelineStage[]
+  deals     Deal[]
+}
+
+model PipelineStage {
+  id           String   @id @default(cuid())
+  companyId    String
+  pipelineId   String
+  name         String
+  position     Int
+  color        String?
+  terminalType String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  pipeline     Pipeline @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
+  deals        Deal[]
+  @@unique([pipelineId, position])
+  @@index([companyId])
+}
+
+model Contact {
+  id             String      @id @default(cuid())
+  companyId      String
+  organizationId String?
+  name           String
+  phone          String?
+  email          String?
+  clientType     ClientType  @default(PERSON)
+  city           String?
+  district       String?
+  objectAddress  String?
+  source         String?
+  firstContactAt DateTime    @default(now())
+  lastContactAt  DateTime?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  deletedAt      DateTime?
+  company        Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  deals          Deal[]
+  tasks          Task[]
+  callLogs       CallLog[]
+  files          FileAsset[]
+  leadForms      LeadForm[]
+  @@index([companyId, phone])
+  @@index([companyId, email])
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  companyId String
+  name      String
+  inn       String?
+  phone     String?
+  email     String?
+  address   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  contacts  Contact[]
+  deals     Deal[]
+  @@index([companyId, name])
+}
+
+model Deal {
+  id               String      @id @default(cuid())
+  companyId        String
+  pipelineId       String
+  stageId          String
+  contactId        String?
+  organizationId   String?
+  managerId        String?
+  measurerId       String?
+  title            String
+  amount           Decimal     @default(0)
+  budget           Decimal?
+  probability      Int         @default(20)
+  priority         Priority    @default(NORMAL)
+  status           DealStatus  @default(OPEN)
+  source           String?
+  sourceUrl        String?
+  refusalReason    String?
+  lastContactAt    DateTime?
+  measurementDate  DateTime?
+  installationDate DateTime?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  deletedAt        DateTime?
+  company          Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  pipeline         Pipeline    @relation(fields: [pipelineId], references: [id], onDelete: Restrict)
+  stage            PipelineStage @relation(fields: [stageId], references: [id], onDelete: Restrict)
+  contact          Contact?    @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  organization     Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  manager          User?       @relation("DealManager", fields: [managerId], references: [id], onDelete: SetNull)
+  measurer         User?       @relation("DealMeasurer", fields: [measurerId], references: [id], onDelete: SetNull)
+  fenceParams      DealFenceParams?
+  tasks            Task[]
+  measurements     Measurement[]
+  installations    Installation[]
+  estimates        Estimate[]
+  callLogs         CallLog[]
+  files            FileAsset[]
+  payments         PaymentRecord[]
+  leadForms        LeadForm[]
+  utmSources       UtmSource[]
+  @@index([companyId, stageId])
+  @@index([companyId, managerId])
+  @@index([companyId, status])
+}
+
+model DealFenceParams {
+  id               String    @id @default(cuid())
+  dealId           String    @unique
+  fenceType         FenceType
+  lengthMeters      Decimal?
+  heightMeters      Decimal?
+  material          String?
+  color             String?
+  coatingType       String?
+  metalThicknessMm  Decimal?
+  postType          String?
+  postStepMeters    Decimal?
+  railCount         Int?
+  foundationType    String?
+  hasConcreteWork   Boolean   @default(false)
+  hasDismantling    Boolean   @default(false)
+  hasDelivery       Boolean   @default(false)
+  hasInstallation   Boolean   @default(true)
+  terrainComplexity String?
+  slope             String?
+  soilType          String?
+  needsMeasurement  Boolean   @default(true)
+  urgency           String?
+  needsGates        Boolean   @default(false)
+  gateType          String?
+  gateWidthMeters   Decimal?
+  automaticGates    Boolean   @default(false)
+  needsWicket       Boolean   @default(false)
+  wicketCount       Int       @default(0)
+  hasIntercom       Boolean   @default(false)
+  hasElectricLock   Boolean   @default(false)
+  warrantyMonths    Int?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  deal              Deal      @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  @@index([fenceType])
+}
+
+model Task {
+  id          String     @id @default(cuid())
+  companyId   String
+  dealId      String?
+  contactId   String?
+  assigneeId  String?
+  title       String
+  description String?
+  dueAt       DateTime?
+  priority    Priority   @default(NORMAL)
+  status      TaskStatus @default(TODO)
+  reminderAt  DateTime?
+  comments    Json       @default("[]")
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  deletedAt   DateTime?
+  company     Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  deal        Deal?      @relation(fields: [dealId], references: [id], onDelete: SetNull)
+  contact     Contact?   @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  assignee    User?      @relation(fields: [assigneeId], references: [id], onDelete: SetNull)
+  @@index([companyId, assigneeId, dueAt])
+}
+
+model Measurement {
+  id          String            @id @default(cuid())
+  companyId   String
+  dealId      String
+  measurerId  String?
+  scheduledAt DateTime
+  status      MeasurementStatus @default(PLANNED)
+  result      Json              @default("{}")
+  comment     String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  deletedAt   DateTime?
+  company     Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  deal        Deal              @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  measurer    User?             @relation(fields: [measurerId], references: [id], onDelete: SetNull)
+}
+
+model Installation {
+  id                 String             @id @default(cuid())
+  companyId          String
+  dealId             String
+  crewLeadId         String?
+  scheduledAt        DateTime
+  status             InstallationStatus @default(PLANNED)
+  materialsPurchased Boolean            @default(false)
+  materialsDelivered Boolean            @default(false)
+  objectReady        Boolean            @default(false)
+  actSigned          Boolean            @default(false)
+  warrantyIssued     Boolean            @default(false)
+  comment            String?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  deletedAt          DateTime?
+  company            Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  deal               Deal               @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  crewLead           User?              @relation(fields: [crewLeadId], references: [id], onDelete: SetNull)
+}
+
+model Estimate {
+  id        String   @id @default(cuid())
+  companyId String
+  dealId    String
+  number    String
+  status    String   @default("draft")
+  subtotal  Decimal  @default(0)
+  discount  Decimal  @default(0)
+  markup    Decimal  @default(0)
+  total     Decimal  @default(0)
+  pdfUrl    String?
+  sentAt    DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  deal      Deal     @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  items     EstimateItem[]
+  @@unique([companyId, number])
+}
+
+model EstimateItem {
+  id          String   @id @default(cuid())
+  estimateId  String
+  name        String
+  description String?
+  quantity    Decimal
+  unit        String
+  unitPrice   Decimal
+  total       Decimal
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  estimate    Estimate @relation(fields: [estimateId], references: [id], onDelete: Cascade)
+}
+
+model CallLog {
+  id             String        @id @default(cuid())
+  companyId      String
+  dealId         String?
+  contactId      String?
+  provider       String
+  providerCallId String?
+  direction      CallDirection
+  status         CallStatus
+  phone          String
+  managerPhone   String?
+  recordingUrl   String?
+  source         String?
+  occurredAt     DateTime
+  durationSec    Int?
+  rawPayload     Json          @default("{}")
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  company        Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  deal           Deal?         @relation(fields: [dealId], references: [id], onDelete: SetNull)
+  contact        Contact?      @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  @@unique([companyId, provider, providerCallId])
+  @@index([companyId, phone])
+}
+
+model Integration {
+  id              String          @id @default(cuid())
+  companyId       String
+  type            IntegrationType
+  name            String
+  encryptedConfig String
+  status          String          @default("active")
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  deletedAt       DateTime?
+  company         Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  webhooks        Webhook[]
+}
+
+model Webhook {
+  id             String       @id @default(cuid())
+  companyId      String
+  integrationId  String?
+  source         String
+  eventType      String?
+  idempotencyKey String?
+  payload        Json
+  status         String       @default("received")
+  error          String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  company        Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  integration    Integration? @relation(fields: [integrationId], references: [id], onDelete: SetNull)
+  @@unique([companyId, source, idempotencyKey])
+}
+
+model AutomationRule {
+  id         String            @id @default(cuid())
+  companyId  String
+  name       String
+  event      String
+  conditions Json              @default("{}")
+  actions    Json              @default("[]")
+  enabled    Boolean           @default(true)
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  deletedAt  DateTime?
+  company    Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  events     AutomationEvent[]
+}
+
+model AutomationEvent {
+  id         String          @id @default(cuid())
+  companyId  String
+  ruleId     String?
+  entityType String
+  entityId   String
+  status     String          @default("queued")
+  result     Json            @default("{}")
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+  company    Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  rule       AutomationRule? @relation(fields: [ruleId], references: [id], onDelete: SetNull)
+}
+
+model ActivityLog {
+  id         String   @id @default(cuid())
+  companyId  String
+  actorId    String?
+  entityType String
+  entityId   String
+  action     String
+  before     Json?
+  after      Json?
+  ip         String?
+  createdAt  DateTime @default(now())
+  company    Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  actor      User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+}
+
+model FileAsset {
+  id        String   @id @default(cuid())
+  companyId String
+  dealId    String?
+  contactId String?
+  name      String
+  url       String
+  mimeType  String
+  sizeBytes Int?
+  kind      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  deal      Deal?    @relation(fields: [dealId], references: [id], onDelete: SetNull)
+  contact   Contact? @relation(fields: [contactId], references: [id], onDelete: SetNull)
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  companyId String
+  userId    String
+  title     String
+  body      String?
+  type      String
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  company   Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PaymentRecord {
+  id        String        @id @default(cuid())
+  companyId String
+  dealId    String
+  amount    Decimal
+  status    PaymentStatus @default(PENDING)
+  method    String?
+  paidAt    DateTime?
+  comment   String?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  company   Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  deal      Deal          @relation(fields: [dealId], references: [id], onDelete: Cascade)
+}
+
+model SeoPage {
+  id              String     @id @default(cuid())
+  companyId       String
+  slug            String
+  metaTitle       String
+  metaDescription String
+  h1              String
+  pageType        String
+  content         Json       @default("{}")
+  schemaJson      Json       @default("{}")
+  canonicalUrl    String?
+  status          String     @default("draft")
+  publishedAt     DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  deletedAt       DateTime?
+  company         Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  leadForms       LeadForm[]
+  @@unique([companyId, slug])
+}
+
+model BlogPost {
+  id              String    @id @default(cuid())
+  companyId       String
+  authorId        String?
+  slug            String
+  title           String
+  metaTitle       String?
+  metaDescription String?
+  excerpt         String?
+  content         String
+  status          String    @default("draft")
+  publishedAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  deletedAt       DateTime?
+  company         Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  author          User?     @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  @@unique([companyId, slug])
+}
+
+model LeadForm {
+  id         String   @id @default(cuid())
+  companyId  String
+  seoPageId  String?
+  contactId  String?
+  dealId     String?
+  source     String
+  landingUrl String?
+  payload    Json
+  utm        Json     @default("{}")
+  status     String   @default("processed")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  company    Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  seoPage    SeoPage? @relation(fields: [seoPageId], references: [id], onDelete: SetNull)
+  contact    Contact? @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  deal       Deal?    @relation(fields: [dealId], references: [id], onDelete: SetNull)
+}
+
+model UtmSource {
+  id          String   @id @default(cuid())
+  companyId   String
+  dealId      String
+  utmSource   String?
+  utmMedium   String?
+  utmCampaign String?
+  utmContent  String?
+  utmTerm     String?
+  landingUrl  String?
+  referrer    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  deal        Deal     @relation(fields: [dealId], references: [id], onDelete: Cascade)
+}
