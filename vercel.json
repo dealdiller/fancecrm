@@ -33,6 +33,14 @@
   ],
   "rewrites": [
     {
+      "source": "/app.js",
+      "destination": "/assets/client.js"
+    },
+    {
+      "source": "/client.js",
+      "destination": "/assets/client.js"
+    },
+    {
       "source": "/crm",
       "destination": "/index.html"
     },
