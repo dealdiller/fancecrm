@@ -1,0 +1,17 @@
+{
+  "name": "fenceflow-crm",
+  "version": "0.1.0",
+  "private": true,
+  "description": "FenceFlow CRM MVP prototype and architecture blueprint for fence construction companies.",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "crm",
+    "fences",
+    "saas",
+    "vercel"
+  ],
+  "author": "FenceFlow",
+  "license": "UNLICENSED"
+}
